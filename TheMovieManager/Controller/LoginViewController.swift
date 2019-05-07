@@ -29,7 +29,14 @@ class LoginViewController: UIViewController {
     }
     
     @IBAction func loginViaWebsiteTapped() {
-        performSegue(withIdentifier: "completeLogin", sender: nil)
+        TMDBClient.getRequestToken { (success, error) in
+            if success{
+                DispatchQueue.main.async {
+                    UIApplication.shared.open(TMDBClient.Endpoints.webAuth.url, options: [:], completionHandler: nil)
+                }
+                
+            }
+        }
     }
     
     func handleRequestTokenResponse(isSuccess: Bool, error: Error?){
@@ -44,7 +51,7 @@ class LoginViewController: UIViewController {
     func handleLoginResponse(success:Bool, error:Error?){
         if success{
             print(TMDBClient.Auth.requestToken)
-            TMDBClient.createSessionId(requestToken: TMDBClient.Auth.requestToken, completion: handleSessionResponse(success:error:))
+            TMDBClient.createSessionId(completion: handleSessionResponse(success:error:))
         }
     }
     

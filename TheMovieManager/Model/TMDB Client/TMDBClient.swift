@@ -28,6 +28,7 @@ class TMDBClient {
         case getRequestToken
         case login
         case createSeesionId
+        case webAuth
         
         var stringValue: String {
             switch self {
@@ -38,6 +39,8 @@ class TMDBClient {
             case .login: return Endpoints.base + "/authentication/token/validate_with_login" + Endpoints.apiKeyParam
                 
             case .createSeesionId: return Endpoints.base + "/authentication/session/new" + Endpoints.apiKeyParam
+                
+            case .webAuth: return "https://www.themoviedb.org/authenticate/" + Auth.requestToken + "?redirect_to=themoviemanager:authenticate"
             }
         }
         
@@ -56,12 +59,20 @@ class TMDBClient {
             
             let decoder = JSONDecoder()
             do{
-                    let responseObject = try decoder.decode(RequestTokenResponse.self, from: data)
+                
+                let responseObject = try decoder.decode(RequestTokenResponse.self, from: data)
                 Auth.requestToken = responseObject.requestToken
                 
                 completion(true, nil)
                 
             }catch{
+                do{
+                    let responseObject = try decoder.decode(ErrorResponse.self, from: data)
+                    print(responseObject.statusMessage)
+                }catch{
+                    print("error: \(error)")
+                }
+                
                 completion(false, error)
             }
         }
@@ -91,11 +102,11 @@ class TMDBClient {
         task.resume()
     }
     
-    class func createSessionId(requestToken:String, completion: @escaping (Bool, Error?)-> Void){
+    class func createSessionId(completion: @escaping (Bool, Error?)-> Void){
         var request = URLRequest(url: Endpoints.createSeesionId.url)
         request.httpMethod = "POST"
         request.addValue("application/json", forHTTPHeaderField: "Content-Type")
-        let body = PostSession(requestToken: requestToken)
+        let body = PostSession(requestToken: Auth.requestToken)
         request.httpBody = try! JSONEncoder().encode(body)
         let task = URLSession.shared.dataTask(with: request) { (data, response, error) in
             guard let data = data else {

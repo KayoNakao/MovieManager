@@ -35,6 +35,7 @@
 		2316888D2122322D003C820E /* Colors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2316888C2122322D003C820E /* Colors.swift */; };
 		2316888F2122646A003C820E /* GradientView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2316888E2122646A003C820E /* GradientView.swift */; };
 		2316889121226AE7003C820E /* LoginTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2316889021226AE7003C820E /* LoginTextField.swift */; };
+		6D1D367C2282221C0042F768 /* ErrorResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D1D367B2282221C0042F768 /* ErrorResponse.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -68,6 +69,7 @@
 		2316888C2122322D003C820E /* Colors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Colors.swift; sourceTree = "<group>"; };
 		2316888E2122646A003C820E /* GradientView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GradientView.swift; sourceTree = "<group>"; };
 		2316889021226AE7003C820E /* LoginTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginTextField.swift; sourceTree = "<group>"; };
+		6D1D367B2282221C0042F768 /* ErrorResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorResponse.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -185,6 +187,7 @@
 				231688782121CB74003C820E /* RequestTokenResponse.swift */,
 				2316887A2121CB87003C820E /* TMDBResponse.swift */,
 				2316887C2121CB9A003C820E /* SessionResponse.swift */,
+				6D1D367B2282221C0042F768 /* ErrorResponse.swift */,
 			);
 			path = "TMDB Responses";
 			sourceTree = "<group>";
@@ -275,6 +278,7 @@
 				2316886C2121CAF6003C820E /* TMDBClient.swift in Sources */,
 				231688632121CA3D003C820E /* WatchlistViewController.swift in Sources */,
 				231688892121CC10003C820E /* TMDBTypes.swift in Sources */,
+				6D1D367C2282221C0042F768 /* ErrorResponse.swift in Sources */,
 				2316888B212230C8003C820E /* UIViewController+Extension.swift in Sources */,
 				231688852121CBEA003C820E /* LogoutRequest.swift in Sources */,
 				2316885F2121CA19003C820E /* MovieDetailViewController.swift in Sources */,
