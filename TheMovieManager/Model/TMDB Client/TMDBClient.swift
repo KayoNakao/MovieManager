@@ -30,6 +30,7 @@ class TMDBClient {
         case createSeesionId
         case webAuth
         case logout
+        case getFavorites
         
         var stringValue: String {
             switch self {
@@ -45,6 +46,7 @@ class TMDBClient {
                 
             case .logout: return Endpoints.base + "/authentication/session" + Endpoints.apiKeyParam
                 
+            case .getFavorites: return Endpoints.base + "/account/\(Auth.accountId)/favorite/movies" + Endpoints.apiKeyParam + "&session_id=\(Auth.sessionId)"
             }
         }
         
@@ -64,6 +66,9 @@ class TMDBClient {
             }
             let decoder = JSONDecoder()
             do {
+//                let json = try! JSONSerialization.jsonObject(with: data, options: [])
+//                print(json)
+                
                 let responseObject = try decoder.decode(ResponseType.self, from: data)
                 DispatchQueue.main.async {
                     completion(responseObject, nil)
@@ -96,7 +101,9 @@ class TMDBClient {
                     completion(responseObject, nil)
                 }
             }catch{
-                completion(nil, error)
+                DispatchQueue.main.async {
+                    completion(nil, error)
+                }
             }
         }
         task.resume()
@@ -167,5 +174,13 @@ class TMDBClient {
         }
      }
     
-    
+    class func getFavorites(completion:@escaping ([Movie], Error?)->Void){
+        taskForGetRequest(url: Endpoints.getFavorites.url, response: MovieResults.self) { (response, error) in
+            if let response = response {
+                completion(response.results, nil)
+            }else {
+                completion([], error)
+            }
+        }
+    }
 }
