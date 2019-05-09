@@ -32,6 +32,9 @@ class TMDBClient {
         case logout
         case getFavorites
         case search(String)
+        case markWatchlist
+        case markFavorite
+        case posterImageUrl(String)
         
         var stringValue: String {
             switch self {
@@ -50,6 +53,12 @@ class TMDBClient {
             case .getFavorites: return Endpoints.base + "/account/\(Auth.accountId)/favorite/movies" + Endpoints.apiKeyParam + "&session_id=\(Auth.sessionId)"
                 
             case .search(let query): return Endpoints.base + "/search/movie" + Endpoints.apiKeyParam + "&query=\(query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? "")"
+            
+            case .markWatchlist: return Endpoints.base + "/account/\(Auth.accountId)/watchlist" + Endpoints.apiKeyParam + "&session_id=\(Auth.sessionId)"
+                
+            case .markFavorite: return Endpoints.base + "/account/\(Auth.accountId)/favorite" + Endpoints.apiKeyParam + "&session_id=\(Auth.sessionId)"
+                
+            case .posterImageUrl(let posterPath): return "https://image.tmdb.org/t/p/w500/\(posterPath)"
             }
         }
         
@@ -78,7 +87,7 @@ class TMDBClient {
                 }
             } catch {
                 do {
-                    let responseObject = try decoder.decode(ErrorResponse.self, from: data)
+                    let responseObject = try decoder.decode(TMDBResponse.self, from: data)
                     print(responseObject.statusMessage)
                 }catch{
                     
@@ -202,4 +211,44 @@ class TMDBClient {
             }
         }
     }
+    
+    class func markWatchlist(movieId:Int, watchlist:Bool, completion: @escaping(Bool, Error?)->Void){
+        let body = MarkWatchlist(mediaType:"movie", mediaId: movieId, watchlist: watchlist)
+        taskForPostRequest(url: Endpoints.markWatchlist.url, response: TMDBResponse.self, body: body) { (response, error) in
+            if let response = response {
+                completion(response.statusCode ==
+                             1 || response.statusCode ==
+                            12 || response.statusCode ==
+                            13, nil)
+            }else {
+                print(response?.statusMessage ?? "Fail adding to watchlist")
+                completion(false, error)
+            }
+        }
+    }
+    
+    class func markFavorite(mediaId:Int, favorite:Bool, completion:@escaping(Bool, Error?)->Void){
+        let body = MarkFavorite(mediaType:"movie", mediaId: mediaId, favorite: favorite)
+        taskForPostRequest(url: Endpoints.markFavorite.url, response: TMDBResponse.self, body: body) { (response, error) in
+            if let response = response {
+                completion(response.statusCode ==
+                             1 || response.statusCode ==
+                            12 || response.statusCode ==
+                            13, nil)
+            }else {
+                print(response?.statusMessage ?? "Fail marking as favorite")
+                completion(false, error)
+            }
+        }
+    }
+    
+    class func downloadImage(posterPath:String, completion:@escaping(Data?, Error?)->Void){
+        let task = URLSession.shared.dataTask(with: Endpoints.posterImageUrl(posterPath).url) { (data, response, error) in
+            DispatchQueue.main.async {
+                completion(data, nil)
+            }
+        }
+        task.resume()
+    }
+    
 }
