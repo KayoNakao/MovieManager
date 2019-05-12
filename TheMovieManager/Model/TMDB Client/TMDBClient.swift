@@ -67,7 +67,7 @@ class TMDBClient {
         }
     }
     
-    class func taskForGetRequest<ResponseType: Decodable>(url: URL, response: ResponseType.Type, completion: @escaping(ResponseType?, Error?)-> Void){
+    @discardableResult class func taskForGetRequest<ResponseType: Decodable>(url: URL, response: ResponseType.Type, completion: @escaping(ResponseType?, Error?)-> Void) -> URLSessionTask{
         
         let task = URLSession.shared.dataTask(with: url) { data, response, error in
             guard let data = data else {
@@ -87,10 +87,14 @@ class TMDBClient {
                 }
             } catch {
                 do {
-                    let responseObject = try decoder.decode(TMDBResponse.self, from: data)
-                    print(responseObject.statusMessage)
+                    let errorResponse = try decoder.decode(TMDBResponse.self, from: data)
+                    DispatchQueue.main.async {
+                        completion(nil, errorResponse)
+                    }
                 }catch{
-                    
+                    DispatchQueue.main.async {
+                        completion(nil, error)
+                    }
                 }
                 DispatchQueue.main.async {
                     completion(nil, error)
@@ -98,6 +102,8 @@ class TMDBClient {
             }
         }
         task.resume()
+        
+        return task
     }
     
     class func taskForPostRequest<RequestType: Encodable, ResponseType: Decodable>(url: URL, response:ResponseType.Type, body:RequestType, completion:@escaping(ResponseType?, Error?)->Void){
@@ -112,22 +118,35 @@ class TMDBClient {
                 }
                 return
             }
+            let decoder = JSONDecoder()
             do{
-                let decoder = JSONDecoder()
                 let responseObject = try decoder.decode(ResponseType.self, from: data)
                 DispatchQueue.main.async {
                     completion(responseObject, nil)
                 }
             }catch{
+                do{
+                    let errorObject = try decoder.decode(TMDBResponse.self, from: data)
+                    DispatchQueue.main.async {
+                        completion(nil, errorObject)
+                    }
+                }catch{
+                    DispatchQueue.main.async {
+                        completion(nil,error)
+                    }
+                    
+                }
+
                 DispatchQueue.main.async {
                     completion(nil, error)
                 }
             }
         }
         task.resume()
+        
     }
     
-    class func getRequestToken(completion: @escaping (Bool, Error?)->Void) {
+    class func getRequestToken(completion: @escaping (Bool, Error?)->Void){
         taskForGetRequest(url: Endpoints.getRequestToken.url, response: RequestTokenResponse.self) { (response, error) in
             if let response = response {
                 Auth.requestToken = response.requestToken
@@ -150,6 +169,7 @@ class TMDBClient {
                     completion(false, error)
             }
         }
+        
     }
     
     class func createSessionId(completion: @escaping (Bool, Error?)-> Void){
@@ -202,14 +222,15 @@ class TMDBClient {
         }
     }
     
-    class func search(query:String, completion: @escaping([Movie], Error?)->Void){
-        taskForGetRequest(url: Endpoints.search(query).url, response: MovieResults.self) { (response, error) in
+    class func search(query:String, completion: @escaping([Movie], Error?)->Void)-> URLSessionTask{
+        let task = taskForGetRequest(url: Endpoints.search(query).url, response: MovieResults.self) { (response, error) in
             if let response = response {
                 completion(response.results, nil)
             }else {
                 completion([], error)
             }
         }
+        return task
     }
     
     class func markWatchlist(movieId:Int, watchlist:Bool, completion: @escaping(Bool, Error?)->Void){
